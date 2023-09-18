@@ -1,24 +1,42 @@
-import logo from './logo.svg';
 import './App.css';
+import ImageCard from './components/imageCard';
+import Navbar from './components/Navbar';
+import { useState, useEffect } from 'react';
+
 
 function App() {
+
+  const [images, setImages] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [term, setTerm] = useState('');
+
+
+  useEffect(() => {
+      function getData() {
+          fetch(`https://pixabay.com/api/?key=${process.env.REACT_APP_PIXABAY_API_KEY}&q=${term}&image_type=photo&pretty=true`)
+              .then(response => response.json())
+              .then(data => {
+                  setImages(data.hits)
+                  setIsLoading(false);
+              })
+              .catch(err => console.log(err))
+      }
+      getData()
+  }, [term]) 
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <Navbar searchText={(text) =>setTerm(text)}/>
+
+      {!isLoading && images.length === 0 && <h1 className='text-center my-4'>No Images Found</h1>}
+      <div className='container my-4'>
+        {isLoading? <h1>Loading...</h1> :<div className="row mx-2 my-2">
+          {images.map((image)=>(
+            <ImageCard key={image.id} img={image}/>
+            ))}
+        </div>}
+      </div>
+    </>
   );
 }
 
